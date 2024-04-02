@@ -1,0 +1,172 @@
+#chat-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-family: Arial, sans-serif;
+    width: 300px;
+    max-width: 100%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+#chat-box {
+    position: fixed;
+    bottom: 50px;
+    /* Increase the bottom position to move it up */
+    right: 50px;
+    /* Increase the right position to move it to the left */
+    display: none;
+    width: 300px;
+    max-width: 100%;
+    /* Start with chat box hidden */
+    flex-direction: column;
+    height: 400px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    overflow: hidden;
+    transform: translateY(100%);
+        /* Start off-screen */
+    transition: transform 0.8s ease-out;
+    z-index: 1000;
+    /* Ensure it's under the toggle-chat button but above other elements */
+    /* rest of your styles */
+}
+
+/* Create a class for when the chat is open to transform its position */
+#chat-box.open {
+    transform: translateY(0);
+}
+
+/* Create a class for when the chat is closed to transform its position */
+#chat-box.closed {
+    transform: translateY(100%);
+    /* Adjust value to hide the chat box */
+}
+
+#chat-header {
+    background-color: #007bff;
+    color: white;
+    padding: 10px;
+    flex-shrink: 0;
+    /* Ensures that the header does not shrink */
+}
+
+#messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+    /* Ensures that it takes the available space */
+}
+
+.message {
+    display: flex;
+        align-items: center;
+        /* Aligns items vertically */
+        justify-content: space-between;
+        /* Spreads out the message and the checkmark */
+        padding: 6px 12px;
+        border-radius: 12px;
+        margin: 4px 0;
+        font-size: 14px;
+        word-wrap: break-word;
+        line-height: 1.4;
+        max-width: 80%;
+}
+
+.message.visitor {
+    margin-left: auto;
+    background-color: #dcf8c6;
+    text-align: left;
+}
+
+.message.receiver {
+    background-color: #ececec;
+    text-align: left;
+}
+
+#message-input-container {
+    display: flex;
+    padding: 10px;
+    flex-shrink: 0;
+    /* Ensures that the input container does not shrink */
+}
+
+#message-input {
+    flex: 1;
+    padding: 8px;
+    border-radius: 15px;
+    border: 1px solid #ddd;
+    outline: none;
+}
+
+#send-button {
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+#close-chat {
+    cursor: pointer;
+    font-size: 16px;
+    color: white;
+    background: none;
+    border: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+/* Add a hover effect for the chat button */
+button#toggle-chat:hover {
+    opacity: 0.7;
+    /* This will create the transparency effect on hover */
+    transition: opacity 0.3s ease;
+    /* This adds a transition effect to the opacity change */
+}
+
+/* Style the chat button to look like the provided images */
+button#toggle-chat {
+    display: block;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #FF3344;
+    /* Adjust the color to match your images */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    /* Adjust size to match your design */
+    height: 60px;
+    font-size: 30px;
+    /* Adjust font size as necessary */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    z-index: 1001;
+    /* Make sure it's above other elements */
+}
+
+.status-icon {
+    width: 1.5em;
+    /* Sets the icon size relative to the font size of the message */
+    height: 1.5em;
+    /* Sets the height the same as the width */
+    vertical-align: middle;
+    /* Aligns the icon with the middle of the text */
+    margin-left: 0.5em;
+    /* Adds space between the checkmark and the text */
+    fill: currentColor;
+    /* Ensures the SVG color matches the color of the text */
+}
+
+.message-text {
+    display: flex;
+    /* Use flex to align text and icon */
+    align-items: center;
+    /* Center them vertically */
+    justify-content: space-between;
+    /* Push text and icon to opposite ends */
+}
