@@ -47,8 +47,80 @@
     background-color: #007bff;
     color: white;
     padding: 10px;
-    flex-shrink: 0;
-    /* Ensures that the header does not shrink */
+    position: relative;
+    /* To position the logo and text correctly */
+    text-align: center;
+    /* Align header text to center */
+}
+
+#header-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0;
+    /* Adjust as needed */
+}
+
+#smaller-text {
+    font-size: 12px;
+    margin: 0;
+    /* Adjust as needed */
+}
+
+#company-logo {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 30px;
+    /* Adjust as needed */
+    height: auto;
+}
+
+#topic-selection {
+    padding: 10px;
+    background-color: #f0f0f0;
+    /* Adjust to fit the color scheme */
+}
+
+/* Base styles for the button-like labels */
+.topic-label {
+    display: inline-block;
+    padding: 5px 10px;
+    margin: 5 2px;
+    font-size: 10px;
+    text-align: center;
+    background-color: #007bff;
+    /* Default blue background */
+    color: white;
+    /* White text */
+    border: 2px solid transparent;
+    /* Invisible border by default */
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+    user-select: none;
+    /* Prevent text selection */
+}
+
+/* Hidden radio button */
+.topic-label input[type="radio"] {
+    display: none;
+}
+
+/* Styling for when a label's radio button is checked */
+.topic-label input[type="radio"]:checked+label {
+    background-color: white;
+    /* White background for the checked state */
+    color: #007bff;
+    /* Blue text for the checked state */
+    border: 2px solid #007bff;
+    /* Blue border for the checked state */
+}
+
+#brand-text {
+    font-size: 10px;
+    color: #aaa;
+    text-align: center;
+    padding: 5px 0;
 }
 
 #messages {
@@ -71,6 +143,35 @@
         word-wrap: break-word;
         line-height: 1.4;
         max-width: 80%;
+        position: relative;
+        padding: 10px;
+        margin-bottom: 10px;
+}
+
+.timestamp {
+    position: absolute;
+    right: 5px;
+    /* Adjust as necessary, depending on your design */
+    bottom: 5px;
+    /* Adjust as necessary, to not overlap the message text */
+    font-size: 0.65em;
+    /* Smaller font size for timestamps */
+    color: #646464;
+    /* A lighter color for the timestamp, choose what works for you */
+    background-color: rgba(255, 255, 255, 0.6);
+    /* Semi-transparent white background */
+    border-radius: 4px;
+    /* Rounded corners for the timestamp background */
+    padding: 2px 4px;
+    /* Padding around the timestamp text */
+    white-space: nowrap;
+    /* Keep the timestamp in one line */
+    overflow: hidden;
+    /* Prevents content from spilling out */
+    text-overflow: ellipsis;
+    /* Adds an ellipsis if the text is too long */
+    max-width: 100px;
+    /* Ensures the timestamp doesn't get too wide */
 }
 
 .message.visitor {
@@ -169,4 +270,76 @@ button#toggle-chat {
     /* Center them vertically */
     justify-content: space-between;
     /* Push text and icon to opposite ends */
+}
+
+#lead-form {
+    display: none;
+    /* Hidden by default */
+    flex-direction: column;
+    /* Stack the inputs vertically */
+    padding: 10px;
+    /* Match padding of other elements */
+    position: absolute;
+    /* Position it over the message input area */
+    top: 60px;
+    /* Align it with the bottom of the chat box */
+    left: 0;
+    /* Align it with the left of the chat box */
+    width: 90%;
+    /* Ensure it spans the width of the chat box */
+    background-color: #f0f0f0;
+    /* Match the chat box background color */
+    border-top: 1px solid #ddd;
+    /* Add a border at the top to match the chat box style */
+}
+
+#lead-form input {
+    margin-bottom: 10px;
+    /* Add some space between the inputs */
+    padding: 8px;
+    /* Padding for better touch targets */
+    border-radius: 15px;
+    /* Match border-radius of other inputs */
+    border: 1px solid #ddd;
+    /* Match border style of other inputs */
+    outline: none;
+    /* Remove outline to match style of other inputs */
+}
+
+#lead-form button {
+    background-color: #007bff;
+    /* Match button colors of send button */
+    color: white;
+    /* Text color to contrast with button background */
+    border: none;
+    border-radius: 15px;
+    /* Match border-radius of other buttons */
+    cursor: pointer;
+    padding: 8px 12px;
+}
+
+.lead-form-title {
+    color: #000000;
+    font-size: 18px;
+    padding: 10px 0;
+    text-align: center;
+}
+
+.small-text {
+    color: #aaa;
+    font-size: 12px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.checkbox-container {
+    color: #aaa;
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.checkbox-label {
+    margin-left: 8px;
+    font-size: 10px;
 }
