@@ -4,13 +4,49 @@ document.addEventListener("DOMContentLoaded", function () {
   localStorage.setItem("visitorID", visitorID);
   var chatWidget = document.getElementById("chat-widget");
 
+  var leadFormHTML = `
+  <div id="lead-form" class="lead-form" style="display: none;">
+    <div class="lead-form-title">We'll connect you to our AI Assistant</div>
+    <input type="text" id="visitor-name" placeholder="Your Name" />
+    <input type="email" id="visitor-email" placeholder="Enter your email" />
+    <div class="small-text">We will contact you via this email if you aren't online</div>
+    <label class="checkbox-container">
+      <input type="checkbox" id="agreement-checkbox">
+      <span class="checkbox-label">I agree to have my personal data processed for chat support</span>
+    </label>
+    <div id="error-message" style="display: none; color: red; margin-bottom: 5px; font-size: 12px;
+    margin: 0;">
+      <!-- Error message will be inserted here -->
+    </div>
+    <button id="submit-lead">Chat now</button>
+  </div>
+`;
+
   chatWidget.innerHTML = `
     <div id="chat-box" class="closed">
         <div id="chat-header">
-            <span>Chat with Us!</span>
-            <button id="close-chat" style="float: right;">X</button>
-        </div>
+        <div id="header-title">Contact Us</div>
+        <div id="smaller-text">We typically reply in less than a minute</div>
+    </div>
+        ${leadFormHTML}
         <div id="messages"></div>
+        <div id="topic-selection">
+        <div id="select-topic" style="font-size:12px;">Select a topic:</div>
+          <label class="topic-label" for="sales">
+              <input type="radio" id="sales" name="topic" value="sales">
+              Sales
+          </label>
+          <label class="topic-label" for="support">
+              <input type="radio" id="support" name="topic" value="support">
+              Support
+          </label>
+          <label class="topic-label" for="just-testing">
+              <input type="radio" id="just-testing" name="topic" value="just-testing">
+              Just Testing
+          </label>
+        </div>
+        <div id="topic-error-message" style="display: none; color: red; margin-bottom: 5px; font-size: 12px;
+    margin-left: 15px;"></div>
         <div id="message-input-container">
             <textarea id="message-input" placeholder="Type a message..."></textarea>
             <button id="send-button" style="display:block;"><svg width="20px" height="20px" viewBox="0 -0.5 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -19,7 +55,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
             </svg></button>
         </div>
+        
+        <div id="brand-text">Geisa AI Chat</div>
     </div>
+    
     <button id="toggle-chat">
         <span id="chat-icon" ><svg fill="#ffffff" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
         xmlns:xlink="http://www.w3.org/1999/xlink" width="30px" height="30px" viewBox="0 0 45.779 45.779"
@@ -50,6 +89,16 @@ document.addEventListener("DOMContentLoaded", function () {
   var chatIcon = document.getElementById("chat-icon");
   var minimizeIcon = document.getElementById("minimize-icon");
 
+  var submitLeadButton = document.getElementById("submit-lead");
+  var visitorNameInput = document.getElementById("visitor-name");
+  var visitorEmailInput = document.getElementById("visitor-email");
+  var leadForm = document.getElementById("lead-form");
+  var errorMessageDiv = document.getElementById("error-message");
+  var errorMessageTopicDiv = document.getElementById("topic-error-message");
+
+  // Check if lead form was already submitted
+  var leadFormSubmitted = localStorage.getItem("leadFormSubmitted");
+
   // Read the unique values from the data-* attributes
   var websiteID = chatWidget.getAttribute("data-website-domain");
   var aid = chatWidget.getAttribute("data-aid");
@@ -61,13 +110,29 @@ document.addEventListener("DOMContentLoaded", function () {
     displayMessage(message);
   });
 
-  var closeButton = document.getElementById("close-chat");
+  if (!leadFormSubmitted) {
+    document.getElementById("message-input-container").style.display = "flex";
+  }
+
+  function toggleInputVisibility(showLeadForm) {
+    var messageInputContainer = document.getElementById(
+      "message-input-container"
+    );
+    var leadForm = document.getElementById("lead-form");
+    if (showLeadForm) {
+      messageInputContainer.style.display = "none"; // Hide message input
+      leadForm.style.display = "flex"; // Show lead form
+    } else {
+      messageInputContainer.style.display = "flex"; // Show message input
+      leadForm.style.display = "none"; // Hide lead form
+    }
+  }
 
   // Close chat event
-  closeButton.onclick = function () {
-    chatBox.style.display = "none";
-    toggleButton.style.display = "block"; // Show the toggle button again
-  };
+  // closeButton.onclick = function () {
+  //   chatBox.style.display = "none";
+  //   toggleButton.style.display = "block"; // Show the toggle button again
+  // };
 
   // Toggle chat widget visibility
   toggleButton.onclick = function () {
@@ -102,6 +167,18 @@ document.addEventListener("DOMContentLoaded", function () {
     this.style.opacity = "1";
   };
 
+  // Function to show or hide the topic selection based on lead form submission
+  function toggleTopicSelection(show) {
+    var topicSelection = document.getElementById("topic-selection");
+    if (show) {
+      topicSelection.style.display = "block"; // Show the topic selection
+    } else {
+      topicSelection.style.display = "none"; // Hide the topic selection
+    }
+  }
+
+  toggleTopicSelection(!leadFormSubmitted);
+
   messageInput.addEventListener("keypress", function (e) {
     if (e.key === "Enter") {
       e.preventDefault(); // Prevent the default action to stop from actually inserting a newline
@@ -109,28 +186,69 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  var messageId = 0; // A counter to assign a unique ID to each message
-
   // Send a message
-  sendButton.onclick = function () {
-    var message = messageInput.value.trim();
-    if (message && ws && ws.readyState === WebSocket.OPEN) {
+
+  function sendMessage(message) {
+    //var message = messageInput.value.trim();
+
+    if (!leadFormSubmitted && message && !!getSelectedTopic()) {
+      toggleInputVisibility(true); // Show lead form, hide message input
+      toggleTopicSelection(false);
+      errorMessageTopicDiv.style.display = "none";
+      console.log("opsi 1...");
+      return; // Prevent the message from being sent
+    } else {
+      console.log("opsi 2...");
+      console.log("something is missing...");
+      console.log(getSelectedTopic());
+      var errorMessages = [];
+      if (getSelectedTopic() === null)
+        errorMessages.push("You must select a topic.");
+      if (message === "")
+        errorMessages.push("You must enter a message to send....");
+
+      // Join all error messages and show them
+      errorMessageTopicDiv.innerHTML = errorMessages.join(" ");
+      errorMessageTopicDiv.style.display = "block";
+    }
+    if (
+      message &&
+      ws &&
+      ws.readyState &&
+      getSelectedTopic() &&
+      WebSocket.OPEN &&
+      leadFormSubmitted
+    ) {
+      console.log("opsi 3...");
       var uniqueMessageId = generateMessageId();
+
+      // Retrieve name and email from localStorage
+      var visitorName = localStorage.getItem("visitorName");
+      var visitorEmail = localStorage.getItem("visitorEmail");
+      var selectedTopic = localStorage.getItem("selectedTopic");
+
       var messageData = {
         websiteID,
         visitorID,
         aid,
         gid,
+        visitorName: visitorName,
+        visitorEmail: visitorEmail,
         message,
         fromVisitor: true, // Identify that this message is from the visitor
         messageId: uniqueMessageId,
         status: "sent",
+        topic: selectedTopic,
       };
       ws.send(JSON.stringify(messageData));
       addMessageToHistory(messageData); // Add the sent message to chat history
       displayMessage(messageData, "sent"); // Display the sent message
       messageInput.value = ""; // Clear input after sending
     }
+  }
+  sendButton.onclick = function () {
+    var message = messageInput.value.trim();
+    sendMessage(message);
   };
 
   function initializeWebSocket() {
@@ -172,6 +290,10 @@ document.addEventListener("DOMContentLoaded", function () {
           if (msg.messageId === message.messageId) {
             msg.status = "received";
           }
+
+          if (!msg.timestamp) {
+            msg.timestamp = new Date().getTime();
+          }
         });
         localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
       } else if (message.text) {
@@ -191,6 +313,100 @@ document.addEventListener("DOMContentLoaded", function () {
     ws.onerror = function (error) {
       console.log("WebSocket error:", error);
     };
+  }
+
+  // Handle lead form submission
+  submitLeadButton.onclick = function () {
+    // Clear previous error messages
+    errorMessageDiv.innerHTML = "";
+    errorMessageDiv.style.display = "none";
+
+    var name = visitorNameInput.value.trim();
+    var email = visitorEmailInput.value.trim();
+    var agreementChecked =
+      document.getElementById("agreement-checkbox").checked;
+    var selectedTopic = getSelectedTopic(); // Get the selected topic from the radio buttons
+
+    // Validate input values
+    if (!name || !email || !agreementChecked || !selectedTopic) {
+      // If any field is missing, display an error message
+      var errorMessages = [];
+      if (!name) errorMessages.push("Name is required.");
+      if (!email) errorMessages.push("Email is required.");
+      if (!agreementChecked) errorMessages.push("You must agree to the terms.");
+      if (!selectedTopic) errorMessages.push("Please select a topic.");
+
+      // Join all error messages and show them
+      errorMessageDiv.innerHTML = errorMessages.join(" ");
+      errorMessageDiv.style.display = "block";
+    } else {
+      // Format the message to be sent
+      var userMessage = messageInput.value.trim();
+      var formattedMessage =
+        "New message from " +
+        name +
+        " about " +
+        selectedTopic +
+        ": " +
+        userMessage;
+
+      // Set the formatted message as the value of messageInput
+      //messageInput.value = formattedMessage;
+
+      // Utilize the sendButton.onclick functionality to send the message
+
+      localStorage.setItem("leadFormSubmitted", "true");
+      localStorage.setItem("visitorName", name);
+      localStorage.setItem("visitorEmail", email);
+      localStorage.setItem("selectedTopic", selectedTopic);
+      leadFormSubmitted = "true";
+      toggleInputVisibility(false);
+
+      sendMessage(formattedMessage);
+      // Clear input fields after submission
+      visitorNameInput.value = "";
+      visitorEmailInput.value = "";
+    }
+  };
+
+  // Add event listeners to radio buttons
+  var radioButtons = document.querySelectorAll(
+    '.topic-label input[type="radio"]'
+  );
+
+  radioButtons.forEach(function (radio) {
+    radio.addEventListener("change", function () {
+      radioButtons.forEach(function (otherRadio) {
+        var label = otherRadio.parentNode; // Get the parent label of the radio
+        if (otherRadio.checked) {
+          label.style.backgroundColor = "white";
+          label.style.color = "#007bff";
+          label.style.border = "2px solid #007bff";
+        } else {
+          label.style.backgroundColor = "#007bff";
+          label.style.color = "white";
+          label.style.border = "2px solid transparent";
+        }
+      });
+    });
+  });
+
+  // Function to get the selected topic
+  function getSelectedTopic() {
+    var selectedTopic = localStorage.getItem("selectedTopic");
+
+    if (selectedTopic === null) {
+      var selectedTopic = null;
+      var radioButtons = document.querySelectorAll(
+        '.topic-label input[type="radio"]'
+      );
+      radioButtons.forEach(function (radio) {
+        if (radio.checked) {
+          selectedTopic = radio.value;
+        }
+      });
+    }
+    return selectedTopic;
   }
 
   // Function to generate a simple UUID-like visitor ID
@@ -228,6 +444,23 @@ document.addEventListener("DOMContentLoaded", function () {
         messageElement.classList.add("receiver");
       }
 
+      var timestamp = message.messageId
+        ? parseInt(message.messageId.split("-")[0])
+        : new Date().getTime();
+      var formattedTimestamp = formatTimestamp(timestamp);
+
+      // For messages coming from the server without a timestamp
+      if (!message.messageId) {
+        // Create a new timestamp
+        message.timestamp = new Date().getTime();
+        // Save it to the message object if you're going to store it in chatHistory or use it later
+      }
+
+      var timestampElement = document.createElement("div");
+      timestampElement.classList.add("timestamp");
+      timestampElement.textContent = formattedTimestamp;
+      messageElement.appendChild(timestampElement);
+
       // Attach a unique identifier to the message element if it's from the visitor
       if (message.messageId) {
         messageElement.setAttribute("data-message-id", message.messageId);
@@ -250,6 +483,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function addMessageToHistory(message) {
+    if (!message.messageId) {
+      message.timestamp = new Date().getTime(); // Assign current time if not already present
+    }
     chatHistory.push(message);
     localStorage.setItem("chatHistory", JSON.stringify(chatHistory));
   }
@@ -293,5 +529,29 @@ document.addEventListener("DOMContentLoaded", function () {
       initializeWebSocket();
       reconnectAttempt++;
     }, timeout);
+  }
+
+  function formatTimestamp(timestamp) {
+    const messageDate = new Date(timestamp);
+    const now = new Date();
+    let formattedTime;
+
+    // Same day
+    if (messageDate.toDateString() === now.toDateString()) {
+      formattedTime = messageDate.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } else {
+      // Different day
+      formattedTime = messageDate.toLocaleDateString("en-US", {
+        day: "numeric",
+        month: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+
+    return formattedTime;
   }
 });
